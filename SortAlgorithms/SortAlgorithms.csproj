@@ -51,6 +51,7 @@
     <Compile Include="Stable\MergeSort.cs" />
     <Compile Include="Stable\SelectionSort.cs" />
     <Compile Include="Stable\ShellSort.cs" />
+    <Compile Include="Unstable\Heapsort.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
