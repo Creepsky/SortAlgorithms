@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SortAlgorithms.Unstable;
 
 namespace SortAlgorithms
 {
@@ -29,10 +30,22 @@ namespace SortAlgorithms
             for (var i = 0; i < originalElements.Capacity; ++i)
                 originalElements.Add(new Element { Value = random.Next() });
 
-            var referenceElements = new List<Element>(originalElements);
-            referenceElements.Sort();
+            for (var i = 0; i < count << 10; ++i)
+            {
+                var index = random.Next(0, originalElements.Count - 1);
+                var otherIndex = random.Next(0, originalElements.Count - 1);
+                var range = random.Next(5, 10);
 
-            Action<ISortAlgorithm, string> run = (sortAlgorithm, name) =>
+                if (index + range < originalElements.Count - 1)
+                    for (var rangeIndex = 0; rangeIndex < range; ++rangeIndex)
+                        originalElements[index + rangeIndex] = originalElements[otherIndex];
+            }
+
+            var referenceElements = (from oe in originalElements
+                                     orderby oe.Value
+                                     select oe).ToList();
+
+            Action < ISortAlgorithm, string> run = (sortAlgorithm, name) =>
             {
                 var elements = new List<Element>(originalElements);
 
@@ -41,11 +54,10 @@ namespace SortAlgorithms
                 var timeAfter = (double) Environment.TickCount;
 
                 Console.WriteLine(
-                    (!elements.Where((t, i) => t != referenceElements[i] || t.CompareTo(referenceElements[i]) != 0)
-                        .Any()
-                        ? "{0} is OK!"
-                        : "{0} FAILED!") + " ({1}s)",
-                    name, (timeAfter - timeBefore) / 1000.0);
+                    "{0}: {1}s -- Sorting {2} -- {3}",
+                    name, (timeAfter - timeBefore) / 1000.0,
+                    elements.Where((t, i) => t.CompareTo(referenceElements[i]) != 0).Any() ? "FAILED" : "OK",
+                    elements.Where((t, i) => t != referenceElements[i]).Any() ? "UNSTABLE" : "STABLE");
             };
                 
             run(new InsertionSort(), "Insertion-Sort");
@@ -54,6 +66,7 @@ namespace SortAlgorithms
             run(new BubbleSort(), "Bubble-Sort");
             run(new ShellSort(), "Shell-Sort");
             run(new MergeSort(), "Merge-Sort");
+            run(new Heapsort(), "Heap-Sort");
         }
     }
 }
